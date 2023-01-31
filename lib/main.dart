@@ -35,6 +35,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  bool _sequencePlaying = true;
+
+  int _score = 0;
+
+  int _delaySpeed = 500;
+  
   final AudioPlayer _audioPlayer = AudioPlayer();
   final cache = AudioCache(prefix: "assets/sounds/");
 
@@ -51,10 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late SimonGame simonGame;
 
-  void playSound(int i) async {
+  void playSound(String sound) async {
     try {
-      int tmpc = i + 1;
-      final url = await cache.load(tmpc == 0 ? "error.wav" : "sq$tmpc.wav");
+      final url = await cache.load("$sound.wav");
 
       _audioPlayer.stop();
       _audioPlayer.setUrl(url.path, isLocal:true);
@@ -65,45 +70,52 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   playSequence() async {
+    _sequencePlaying = true;
     for (var i = 0; i < simonGame.getSequence().length; i++) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(Duration(milliseconds: _delaySpeed));
       setState(() {
         _counter = simonGame.getSequence()[i];
-        playSound(_counter);
+        playSound("${_counter+1}");
       });
-      await Future.delayed(const Duration(milliseconds: 500));
-      setState(() {
-        _counter = -1;
-      });
+      await Future.delayed(Duration(milliseconds: _delaySpeed));
+      setState(() {_counter = -1;});
     }
+    _sequencePlaying = false;
   }
 
   @override
   Widget build(BuildContext context) {
     return CanvasTouchDetector(
       builder: (context) => CustomPaint(
-        painter: SiwocsPainter(context, _counter, (counter) {
+        painter: SiwocsPainter(context, _counter, _score, (counter) {
           setState(() {
             _counter = counter;
 
+            print(_sequencePlaying);
+            if(_sequencePlaying) return;
+            
             var res = simonGame.play(counter);
-
+            
+            
             if(res == 1) {
-              Future.delayed(const Duration(microseconds: 2000), () {
+              playSound("correct");
+              setState(() {
+                _score++;
+              });
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if(_delaySpeed > 60) _delaySpeed -= 25;
                 playSequence();
               });
             }
             else if (res == -1 )
             {
-              Future.delayed(const Duration(microseconds: 1500), () {
+              playSound("error");
+              Future.delayed(const Duration(milliseconds: 500), () {
                 playSequence();
-
-                playSound(-1);
               });
+            } else {
+              playSound("${_counter+1}");
             }
-
-
-            playSound(counter);
           });
         }),
       ),
@@ -125,10 +137,13 @@ class SiwocsPainter extends CustomPainter {
   BuildContext context;
   Function(int) callback;
 
+  int score = 0;
+
   int highlight = -1;
 
-  SiwocsPainter(this.context, int counter, this.callback) {
+  SiwocsPainter(this.context, int counter, int _score, this.callback) {
     _counter = counter;
+    score = _score;
     highlight = counter;
   }
 
@@ -197,7 +212,7 @@ class SiwocsPainter extends CustomPainter {
     );
 
     var textSpan = TextSpan(
-      text: 'Simon',
+      text: "$score",
       style: textStyle,
     );
 
