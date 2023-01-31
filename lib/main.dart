@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:touchable/touchable.dart';
 import 'dart:math';
 
 void main() {
@@ -81,21 +82,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return CanvasTouchDetector(
+      builder: (context) => CustomPaint(
+        painter: SiwocsPainter(context, _counter, (counter) {
+          setState(() {
+            _counter = counter;
+          });
+        }),
       ),
-      body: CustomPaint(
-        painter: SiwocsPainter(_counter),
-        key: UniqueKey(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Restart',
-        child: const Icon(Icons.restart_alt),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      key: UniqueKey(),
+      gesturesToOverride: const [GestureType.onTapDown],
     );
   }
 }
@@ -108,16 +104,22 @@ class SiwocsPainter extends CustomPainter {
     [Colors.blue, Colors.blue[200]],
   ];
 
+  int _counter = -1;
+  BuildContext context;
+  Function(int) callback;
 
   int highlight = -1;
 
-  SiwocsPainter(int counter) {
+  SiwocsPainter(this.context, int counter, this.callback) {
+    _counter = counter;
     highlight = counter;
   }
 
 
   @override
   void paint(Canvas canvas, Size size) {
+    var touchCanvas = TouchyCanvas(context, canvas);
+
     var size = MediaQueryData.fromWindow(WidgetsBinding.instance.window).size;
 
     var width = size.width;
@@ -128,19 +130,28 @@ class SiwocsPainter extends CustomPainter {
       ..color = Colors.black
       ..style = PaintingStyle.fill;
 
+    canvas.drawRect(Rect.fromLTWH(0, 0, width, height), Paint()..color = Colors.grey);
+
     // extern circle
     var circleRadius = size.width / 2 - size.width/3;
     var circleCenter = Offset(width / 2, height / 2);
+
+    paint.style = PaintingStyle.stroke;
+    canvas.drawCircle(circleCenter, circleRadius, paint);
+    paint.style = PaintingStyle.fill;
 
     // draw 4 arcs
     for (var i = 0; i < colors.length; i++) {
       paint.color = colors[i][highlight == i ? 1 : 0]!;
 
-      var rect = Rect.fromCircle(center: circleCenter, radius: circleRadius);
+      var rect = Rect.fromCircle(center: circleCenter, radius: circleRadius - 1);
       var startAngle = pi / 2 * i;
       var sweepAngle = 2 * pi / 4;
 
-      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
+      touchCanvas.drawArc(rect, startAngle, sweepAngle, true, paint, onTapDown: (details) {
+        print("event");
+        callback(i);
+      });
     }
 
     paint.color = Colors.black;
@@ -161,10 +172,6 @@ class SiwocsPainter extends CustomPainter {
     var lineEnd2 = Offset(width / 2 + circleRadius, height / 2);
 
     canvas.drawLine(lineStart2, lineEnd2, paint);
-
-    paint.style = PaintingStyle.stroke;
-    canvas.drawCircle(circleCenter, circleRadius, paint);
-
 
     // draw "simon" text
     var textStyle = TextStyle(
