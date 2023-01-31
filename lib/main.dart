@@ -54,13 +54,20 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+    Test(5);
+  }
+
+  void Test(int i) {
+    if(i <= 0) {
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      setState(() {
+        _counter = Random().nextInt(4);
+      });
+
+      Test(i - 1);
     });
   }
 
@@ -79,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: CustomPaint(
-        painter: SiwocsPainter(),
+        painter: SiwocsPainter(_counter),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -92,11 +99,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class SiwocsPainter extends CustomPainter {
   static const colors = [
-    Colors.red,
-    Colors.green,
-    Colors.yellow,
-    Colors.blue,
+    [Colors.red, Colors.redAccent],
+    [Colors.green, Colors.greenAccent],
+    [Colors.yellow, Colors.yellowAccent],
+    [Colors.blue, Colors.blueAccent],
   ];
+
+  int _counter = -1;
+  
+  SiwocsPainter(int counter) {
+    _counter = counter;
+  }
 
 
   @override
@@ -117,7 +130,7 @@ class SiwocsPainter extends CustomPainter {
 
     // draw 4 arcs
     for (var i = 0; i < colors.length; i++) {
-      paint.color = colors[i];
+      paint.color = colors[i][_counter == i ? 1 : 0];
 
       var rect = Rect.fromCircle(center: circleCenter, radius: circleRadius);
       var startAngle = pi / 2 * i;
