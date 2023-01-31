@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:siwocs/screens/simon_screen.dart';
 import 'package:touchable/touchable.dart';
 import 'dart:math';
 
@@ -43,8 +44,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final cache = AudioCache(prefix: "assets/sounds/");
 
-  void _incrementCounter() {
-    Test(5);
+  late SimonGame simonGame;
+
+  _MyHomePageState() {
+    simonGame = SimonGame();
+    playSequence();
   }
 
   void playSound(int i) async {
@@ -56,28 +60,18 @@ class _MyHomePageState extends State<MyHomePage> {
     _audioPlayer.resume();
   }
 
-  void Test(int i) {
-    if(i < 0) {
-      return;
-    }
-
-    Future.delayed(const Duration(milliseconds: 100), () {
+  playSequence() async {
+    for (var i = 0; i < simonGame.getSequence().length; i++) {
+      await Future.delayed(const Duration(milliseconds: 500));
       setState(() {
-        _counter = i == 0 ? -1 : Random().nextInt(4);
+        _counter = simonGame.getSequence()[i];
+        playSound(_counter);
       });
-
-      if (_counter >= 0) {
-        playSound(_counter + 1);
-      }
-
-      Future.delayed(const Duration(milliseconds: 700), () {
-        setState(() {
-          _counter = -1;
-        });
-
-        Test(i - 1);
+      await Future.delayed(const Duration(milliseconds: 500));
+      setState(() {
+        _counter = -1;
       });
-    });
+    }
   }
 
   @override
@@ -87,6 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
         painter: SiwocsPainter(context, _counter, (counter) {
           setState(() {
             _counter = counter;
+
+            simonGame.play(counter);
+            playSound(counter);
           });
         }),
       ),
@@ -99,9 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
 class SiwocsPainter extends CustomPainter {
   static final colors = [
     [Colors.red, Colors.red[200]],
-    [Colors.green, Colors.green[200]],
     [Colors.yellow, Colors.yellow[200]],
     [Colors.blue, Colors.blue[200]],
+    [Colors.green, Colors.green[200]],
   ];
 
   int _counter = -1;
