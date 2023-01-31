@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -89,6 +91,12 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class SiwocsPainter extends CustomPainter {
+  static const colors = [
+    Colors.red,
+    Colors.green,
+    Colors.yellow,
+    Colors.blue,
+  ];
 
 
   @override
@@ -101,18 +109,27 @@ class SiwocsPainter extends CustomPainter {
     final paint = Paint()
       ..strokeWidth = 5
       ..color = Colors.black
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.fill;
 
     // extern circle
     var circleRadius = size.width / 2 - size.width/3;
     var circleCenter = Offset(width / 2, height / 2);
 
-    canvas.drawCircle(circleCenter, circleRadius, paint);
+    // draw 4 arcs
+    for (var i = 0; i < colors.length; i++) {
+      paint.color = colors[i];
+
+      var rect = Rect.fromCircle(center: circleCenter, radius: circleRadius);
+      var startAngle = pi / 2 * i;
+      var sweepAngle = 2 * pi / 4;
+
+      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
+    }
+
+    paint.color = Colors.black;
 
     // intern circle
     var circleRadius2 = circleRadius / 4;
-
-    paint.style = PaintingStyle.fill;
 
     canvas.drawCircle(circleCenter, circleRadius2, paint);
 
@@ -127,6 +144,9 @@ class SiwocsPainter extends CustomPainter {
     var lineEnd2 = Offset(width / 2 + circleRadius, height / 2);
 
     canvas.drawLine(lineStart2, lineEnd2, paint);
+
+    paint.style = PaintingStyle.stroke;
+    canvas.drawCircle(circleCenter, circleRadius, paint);
 
 
     // draw "simon" text
