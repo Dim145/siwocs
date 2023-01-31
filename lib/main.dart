@@ -81,14 +81,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        tooltip: 'Restart',
+        child: const Icon(Icons.restart_alt),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
 
 class SiwocsPainter extends CustomPainter {
+
+
   @override
   void paint(Canvas canvas, Size size) {
     var size = MediaQueryData.fromWindow(WidgetsBinding.instance.window).size;
@@ -98,13 +100,56 @@ class SiwocsPainter extends CustomPainter {
 
     final paint = Paint()
       ..strokeWidth = 5
-      ..color = Colors.indigoAccent
+      ..color = Colors.black
       ..style = PaintingStyle.stroke;
 
+    // extern circle
     var circleRadius = size.width / 2 - size.width/3;
     var circleCenter = Offset(width / 2, height / 2);
+
     canvas.drawCircle(circleCenter, circleRadius, paint);
 
+    // intern circle
+    var circleRadius2 = circleRadius / 4;
+
+    paint.style = PaintingStyle.fill;
+
+    canvas.drawCircle(circleCenter, circleRadius2, paint);
+
+    // vertical line
+    var lineStart = Offset(width / 2, height / 2 - circleRadius);
+    var lineEnd = Offset(width / 2, height / 2 + circleRadius);
+
+    canvas.drawLine(lineStart, lineEnd, paint);
+
+    // horizontal line
+    var lineStart2 = Offset(width / 2 - circleRadius, height / 2);
+    var lineEnd2 = Offset(width / 2 + circleRadius, height / 2);
+
+    canvas.drawLine(lineStart2, lineEnd2, paint);
+
+
+    // draw "simon" text
+    var textStyle = TextStyle(
+      color: Colors.white,
+      fontSize: circleRadius2 / 2,
+    );
+
+    var textSpan = TextSpan(
+      text: 'Simon',
+      style: textStyle,
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout();
+
+    final offset = Offset(width / 2 - textPainter.width / 2, height / 2 - textPainter.height / 2);
+
+    textPainter.paint(canvas, offset);
   }
 
   @override
