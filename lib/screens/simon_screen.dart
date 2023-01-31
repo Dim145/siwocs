@@ -20,12 +20,12 @@ class SimonGame {
 
   }
 
-  void play(int input) {
+  int play(int input) {
     print('playing $input');
 
     if (_sequence[_position] != input) {
       _position = 0;
-      return;
+      return -1;
     }
 
     _position++;
@@ -33,7 +33,11 @@ class SimonGame {
     if (_position == _sequence.length) {
       levelUp();
       _position = 0;
+
+      return 1;
     }
+
+    return 0;
   }
 
   getSequence() {

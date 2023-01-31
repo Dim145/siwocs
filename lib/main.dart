@@ -52,7 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late SimonGame simonGame;
 
   void playSound(int i) async {
-    final url = await cache.load("sq$i.wav");
+    int tmpc = i + 1;
+    final url = await cache.load(tmpc == 0 ? "error.wav" : "sq$tmpc.wav");
 
     _audioPlayer.stop();
     _audioPlayer.setUrl(url.path, isLocal:true);
@@ -81,7 +82,23 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             _counter = counter;
 
-            simonGame.play(counter);
+            var res = simonGame.play(counter);
+
+            if(res == 1) {
+              Future.delayed(const Duration(microseconds: 2000), () {
+                playSequence();
+              });
+            }
+            else if (res == -1 )
+            {
+              Future.delayed(const Duration(microseconds: 1500), () {
+                playSequence();
+
+                playSound(-1);
+              });
+            }
+
+
             playSound(counter);
           });
         }),
