@@ -34,26 +34,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void dispose() {
-    super.dispose();
-    _audioPlayer.dispose();
-  }
-
   int _counter = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final cache = AudioCache(prefix: "assets/sounds/");
-
-  late SimonGame simonGame;
 
   _MyHomePageState() {
     simonGame = SimonGame();
     playSequence();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _audioPlayer.dispose();
+  }
+
+  late SimonGame simonGame;
+
   void playSound(int i) async {
-    int tmpc = i;
-    final url = await cache.load("$tmpc.wav");
+    final url = await cache.load("sq$i.wav");
 
     _audioPlayer.stop();
     _audioPlayer.setUrl(url.path, isLocal:true);
