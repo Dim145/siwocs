@@ -91,18 +91,20 @@ class _MyHomePageState extends State<MyHomePage> {
 class SiwocsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
+    var size = MediaQueryData.fromWindow(WidgetsBinding.instance.window).size;
+
+    var width = size.width;
+    var height = size.height;
+
     final paint = Paint()
       ..strokeWidth = 5
       ..color = Colors.indigoAccent
       ..style = PaintingStyle.stroke;
 
-    final triangle = Path();
-    triangle.moveTo(150, 0);
-    triangle.relativeLineTo(100, 100);
-    triangle.relativeLineTo(-150, 0);
-    triangle.close();
+    var circleRadius = size.width / 2 - size.width/3;
+    var circleCenter = Offset(width / 2, height / 2);
+    canvas.drawCircle(circleCenter, circleRadius, paint);
 
-    canvas.drawPath(triangle, paint);
   }
 
   @override
