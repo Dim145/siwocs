@@ -52,12 +52,16 @@ class _MyHomePageState extends State<MyHomePage> {
   late SimonGame simonGame;
 
   void playSound(int i) async {
-    int tmpc = i + 1;
-    final url = await cache.load(tmpc == 0 ? "error.wav" : "sq$tmpc.wav");
+    try {
+      int tmpc = i + 1;
+      final url = await cache.load(tmpc == 0 ? "error.wav" : "sq$tmpc.wav");
 
-    _audioPlayer.stop();
-    _audioPlayer.setUrl(url.path, isLocal:true);
-    _audioPlayer.resume();
+      _audioPlayer.stop();
+      _audioPlayer.setUrl(url.path, isLocal:true);
+      _audioPlayer.resume();
+    } catch (e) {
+      print("Erreur lors de la lecture du son : $e");
+    }
   }
 
   playSequence() async {
