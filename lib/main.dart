@@ -146,7 +146,7 @@ class SiwocsPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, width, height), Paint()..color = Colors.grey);
 
     // extern circle
-    var circleRadius = size.width / 2 - size.width/3;
+    var circleRadius = width > height ? height / 2 - 10 : width / 2 - 10;
     var circleCenter = Offset(width / 2, height / 2);
 
     paint.style = PaintingStyle.stroke;
