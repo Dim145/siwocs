@@ -40,30 +40,42 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int _counter = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final player = AudioCache(prefix: "assets/sounds/");
+  final cache = AudioCache(prefix: "assets/sounds/");
 
-  void _incrementCounter() async {
-    int tmpc = _counter + 1;
-    final url = await player.load("$tmpc.wav");
+  void _incrementCounter() {
+    Test(5);
+  }
+
+  void playSound(int i) async {
+    int tmpc = i;
+    final url = await cache.load("$tmpc.wav");
 
     _audioPlayer.stop();
     _audioPlayer.setUrl(url.path, isLocal:true);
     _audioPlayer.resume();
-
-    Test(5);
   }
 
   void Test(int i) {
-    if(i <= 0) {
+    if(i < 0) {
       return;
     }
 
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       setState(() {
-        _counter = Random().nextInt(4);
+        _counter = i == 0 ? -1 : Random().nextInt(4);
       });
 
-      Test(i - 1);
+      if (_counter >= 0) {
+        playSound(_counter + 1);
+      }
+
+      Future.delayed(const Duration(milliseconds: 700), () {
+        setState(() {
+          _counter = -1;
+        });
+
+        Test(i - 1);
+      });
     });
   }
 
@@ -77,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: CustomPaint(
         painter: SiwocsPainter(_counter),
+        key: UniqueKey(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -88,17 +101,18 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class SiwocsPainter extends CustomPainter {
-  static const colors = [
-    [Colors.red, Colors.redAccent],
-    [Colors.green, Colors.greenAccent],
-    [Colors.yellow, Colors.yellowAccent],
-    [Colors.blue, Colors.blueAccent],
+  static final colors = [
+    [Colors.red, Colors.red[200]],
+    [Colors.green, Colors.green[200]],
+    [Colors.yellow, Colors.yellow[200]],
+    [Colors.blue, Colors.blue[200]],
   ];
 
-  int _counter = -1;
+
+  int highlight = -1;
 
   SiwocsPainter(int counter) {
-    _counter = counter;
+    highlight = counter;
   }
 
 
@@ -120,7 +134,7 @@ class SiwocsPainter extends CustomPainter {
 
     // draw 4 arcs
     for (var i = 0; i < colors.length; i++) {
-      paint.color = colors[i][_counter == i ? 1 : 0];
+      paint.color = colors[i][highlight == i ? 1 : 0]!;
 
       var rect = Rect.fromCircle(center: circleCenter, radius: circleRadius);
       var startAngle = pi / 2 * i;
