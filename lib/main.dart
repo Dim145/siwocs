@@ -32,26 +32,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 1;
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  final player = AudioCache(prefix: "assets/sounds/");
-
   @override
   void dispose() {
     super.dispose();
     _audioPlayer.dispose();
   }
 
-  void _incrementCounter() {
-    Test(5);
-  }
+  int _counter = 0;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final player = AudioCache(prefix: "assets/sounds/");
 
-  void Test(int i) {
-    final url = await player.load("$_counter.wav");
+  void _incrementCounter() async {
+    int tmpc = _counter + 1;
+    final url = await player.load("$tmpc.wav");
+
     _audioPlayer.stop();
     _audioPlayer.setUrl(url.path, isLocal:true);
     _audioPlayer.resume();
 
+    Test(5);
+  }
+
+  void Test(int i) {
     if(i <= 0) {
       return;
     }
