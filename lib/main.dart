@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 _score++;
               });
               Future.delayed(const Duration(milliseconds: 500), () {
-                if(_delaySpeed > 60) _delaySpeed -= 25;
+                if(_delaySpeed > 100) {_delaySpeed -= 25;}
                 playSequence();
               });
             }
