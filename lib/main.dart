@@ -1,5 +1,5 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:siwocs/screens/simon_screen.dart';
 import 'package:touchable/touchable.dart';
 import 'dart:math';
@@ -40,9 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _score = 0;
 
   int _delaySpeed = 500;
-  
+
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final cache = AudioCache(prefix: "assets/sounds/");
 
   _MyHomePageState() {
     simonGame = SimonGame();
@@ -57,13 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late SimonGame simonGame;
 
-  void playSound(String sound) async {
+  playSound(String sound) async {
     try {
-      final url = await cache.load("$sound.wav");
-
-      _audioPlayer.stop();
-      _audioPlayer.setUrl(url.path, isLocal:true);
-      _audioPlayer.resume();
+      await _audioPlayer.setAsset("assets/sounds/$sound.wav");
+      await _audioPlayer.play();
     } catch (e) {
       print("Erreur lors de la lecture du son : $e");
     }
@@ -73,10 +69,12 @@ class _MyHomePageState extends State<MyHomePage> {
     _sequencePlaying = true;
     for (var i = 0; i < simonGame.getSequence().length; i++) {
       await Future.delayed(Duration(milliseconds: _delaySpeed));
-      setState(() {
-        _counter = simonGame.getSequence()[i];
-        playSound("${_counter+1}");
-      });
+
+      _counter = simonGame.getSequence()[i];
+      playSound("${_counter+1}");
+
+      setState(() {});
+
       await Future.delayed(Duration(milliseconds: _delaySpeed));
       setState(() {_counter = -1;});
     }
@@ -87,36 +85,36 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return CanvasTouchDetector(
       builder: (context) => CustomPaint(
-        painter: SiwocsPainter(context, _counter, _score, (counter) {
+        painter: SiwocsPainter(context, _counter, _score, (counter) async {
+          if(_sequencePlaying) return;
+
+          var res = simonGame.play(counter);
+
           setState(() {
             _counter = counter;
-
-            print(_sequencePlaying);
-            if(_sequencePlaying) return;
-            
-            var res = simonGame.play(counter);
-            
-            
-            if(res == 1) {
-              playSound("correct");
-              setState(() {
-                _score++;
-              });
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if(_delaySpeed > 100) {_delaySpeed -= 25;}
-                playSequence();
-              });
-            }
-            else if (res == -1 )
-            {
-              playSound("error");
-              Future.delayed(const Duration(milliseconds: 500), () {
-                playSequence();
-              });
-            } else {
-              playSound("${_counter+1}");
-            }
           });
+
+          if(res == 1) {
+            _sequencePlaying = true;
+            playSound("correct");
+            setState(() {
+              _score++;
+            });
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if(_delaySpeed > 100) {_delaySpeed -= 25;}
+              playSequence();
+            });
+          }
+          else if (res == -1 )
+          {
+            playSound("error");
+            Future.delayed(const Duration(milliseconds: 500), () {
+              _sequencePlaying = true;
+              playSequence();
+            });
+          } else {
+            playSound("${_counter+1}");
+          }
         }),
       ),
       key: UniqueKey(),
@@ -133,16 +131,13 @@ class SiwocsPainter extends CustomPainter {
     [Colors.green, Colors.green[200]],
   ];
 
-  int _counter = -1;
   BuildContext context;
   Function(int) callback;
 
   int score = 0;
-
   int highlight = -1;
 
   SiwocsPainter(this.context, int counter, int _score, this.callback) {
-    _counter = counter;
     score = _score;
     highlight = counter;
   }
@@ -180,10 +175,7 @@ class SiwocsPainter extends CustomPainter {
       var startAngle = pi / 2 * i;
       var sweepAngle = 2 * pi / 4;
 
-      touchCanvas.drawArc(rect, startAngle, sweepAngle, true, paint, onTapDown: (details) {
-        print("event");
-        callback(i);
-      });
+      touchCanvas.drawArc(rect, startAngle, sweepAngle, true, paint, onTapDown: (details) => callback(i));
     }
 
     paint.color = Colors.black;
